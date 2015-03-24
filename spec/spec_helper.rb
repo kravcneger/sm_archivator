@@ -1,0 +1,1 @@
+require 'sm_archivator'

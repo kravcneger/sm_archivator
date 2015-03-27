@@ -1,75 +1,76 @@
 class Pq
   def initialize
-    @top = nil
-  end
-
-  def top
-    @top
-  end
-
-  def is_empty?
-    top.nil?
-  end
-
-  def insert(ch, freq, x = nil, y = nil)
-    if @top
-      merge!(Node.new(ch, freq, x, y))
-    else
-      @top = Node.new(ch, freq, x, y)
-    end
-  end  
-
-  def del_top
-    return unless @top
-    m = @top
-    if @top.left && @top.right
-      @top = Heap::merge(@top.left, @top.right)
-    elsif @top.left
-      @top = @top.left
-    elsif @top.right
-      @top = @top.right
-    else
-      @top = nil
-    end
-    m.left = nil
-    m.right = nil
-    m
-  end
-
-  def merge!(heap)
-    @top = Pq::merge(@top, heap)
-    self
+    @nodes = [0]
   end
   
-  def direct_bypass
-    Pq::direct_bypass(top)
+  def insert(ch, freq, x = nil, y = nil)
+    if @nodes[1]
+      @nodes.push(Node.new(ch, freq, x, y))
+      swim(size)
+    else
+      @nodes[1] = Node.new(ch, freq, x, y)
+    end
   end
 
-  def self.merge(heap1, heap2)
-    heap1 = heap1.class == Pq ? heap1.top : heap1
-    heap2 = heap2.class == Pq ? heap2.top : heap2
+  def size
+    @nodes.size - 1
+  end
 
-    return heap1 if heap2.nil?
-    return heap2 if heap1.nil?
- 
-    if heap1.freq >= heap2.freq
-      temp = heap1.right
-      heap1.right = heap1.left
-      heap1.left = Pq::merge(heap2, temp)
-      return heap1
-    else
-      return Pq::merge(heap2, heap1)
-    end
+  def del_min
+    min = self.min
+    exch(1, size)
+    @nodes.pop
+    sink(1)
+    min
+  end
+
+  def min
+    @nodes[1]
+  end
+
+  def direct_bypass
+    Pq::direct_bypass(min)
   end
 
   def self.direct_bypass(node, bypass = [])
-    node = node.top if node.class == Pq
+    node = node.min if node.class == Pq
     if node
       bypass.push([node.ch, node.freq])
       direct_bypass(node.left, bypass)
       direct_bypass(node.right, bypass)
     end
     return bypass
+  end
+
+  private
+
+  def less(i, j)
+    @nodes[i].freq > @nodes[j].freq
+  end
+
+  def exch(i, j)
+    t = @nodes[i]
+    @nodes[i] = @nodes[j]
+    @nodes[j] = t
+  end
+
+  def swim(k)
+    while k > 1 && less( (k/2).to_i , k)
+      exch( (k/2).to_i , k)
+      k = (k/2).to_i
+    end
+  end
+
+  def sink(k)
+    while 2*k <= size
+      j = 2*k
+
+      j += 1 if j < size && less(j, j+1)
+      break unless less(k, j)
+
+      exch(k ,j)
+      k = j
+    end
   end
 
 end

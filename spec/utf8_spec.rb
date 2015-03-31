@@ -5,6 +5,10 @@ RSpec.describe Utf8 do
   let(:Utf8) { Class.new { extend Utf8 } }
 
   it "#get_char" do
+    # ']'
+    char = '01011101'
+    expect(Utf8::get_char(char)).to eq(']')
+
     # 'Ŵ' - C1 B3
     char = '1100010110110100'.delete(' ')
     expect(Utf8::get_char(char)).to eq('Ŵ')

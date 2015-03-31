@@ -19,7 +19,7 @@ class BinaryStream
     raise StreamEnded if in_end?
     bit = @stream[@pointer]
     @pointer += 1
-    bit == '1'
+    bit
   end
 
   def write_bit!(bit)
@@ -33,7 +33,7 @@ class BinaryStream
     units = 0    
     self_current = @pointer
 
-    while read_bit
+    while read_bit == '1'
       units += 1
       
       if units > 1

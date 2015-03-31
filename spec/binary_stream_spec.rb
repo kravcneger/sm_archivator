@@ -14,11 +14,11 @@ RSpec.describe BinaryStream do
     binary_stream.set_stream!('101')
     bits = [1,0,1]
     bits.each do |bit|
-      expect(binary_stream.read_bit).to eq(bit == 1)
+      expect(binary_stream.read_bit).to eq(bit.to_s)
     end
     
     expect(binary_stream.in_end?).to eq(true)
-    
+
     expect { binary_stream.read_bit }.to raise_error(BinaryStream::StreamEnded)
   end
 

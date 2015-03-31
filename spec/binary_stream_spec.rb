@@ -3,21 +3,38 @@ require 'spec_helper'
 RSpec.describe BinaryStream do
   
   # 11100011 11111111 10000000 00000111
-  # stream - 11100011 11111111 1 (17), closed bytes - 0000000, count of closed bytes - 00000111 (7)
   let(:stream) { '111000111000000000000111' }
   let(:binary_stream){ BinaryStream.new('11100011111111111000000000000111') }
 
   it "#size_of_data" do
-    expect(binary_stream.size_of_data).to eq(17)
+    expect(binary_stream.size).to eq(32)
   end
 
   it "#read_bit" do
-    bits = [1,1,1,0,0,0,1,1,1, 1, 1, 1, 1, 1, 1, 1, 1]
+    binary_stream.set_stream!('101')
+    bits = [1,0,1]
     bits.each do |bit|
       expect(binary_stream.read_bit).to eq(bit == 1)
     end
     
+    expect(binary_stream.in_end?).to eq(true)
+    
     expect { binary_stream.read_bit }.to raise_error(BinaryStream::StreamEnded)
+  end
+
+  it "#clear_stream!" do
+    expect{ binary_stream.clear_stream! }.to change{binary_stream.size}.from(32).to(0)
+  end
+
+  it "#write_bit!" do
+    binary_stream.set_stream!('111')
+    expect{ binary_stream.write_bit!('0') }.to change{binary_stream.stream}.from('111').to('0111')
+  end
+
+  it "#write_char!" do
+    binary_stream.set_stream!('11')
+    2.times { binary_stream.read_bit }
+    expect{ binary_stream.write_char!('d') }.to change{binary_stream.stream}.from('11').to('1101100100')    
   end
   
   describe "read_utf8_char" do
@@ -30,16 +47,12 @@ RSpec.describe BinaryStream do
     let!(:char_three_bytes){ chars[2] = '11100010 10001011 10011001' }
     let!(:symbols){ [']', 'Ŵ', '⋙'] }
 
-    def stream(char)
-      char.delete(' ') + '00000000'
-    end
-
     it 'correct symbol' do
       symbols.each_index do |k|
-        expect(binary_stream.set_stream!( stream(chars[k].delete(' ')) ).read_utf8_char).to eq(symbols[k])
+        expect(binary_stream.set_stream!( chars[k].delete(' ') ).read_utf8_char).to eq(symbols[k])
       end
       
-      binary_stream.set_stream!( stream(char_one_byte + char_two_bytes + char_three_bytes) )
+      binary_stream.set_stream!( (char_one_byte + char_two_bytes + char_three_bytes).delete(' ') )
 
       symbols.each do |symbol|
         expect(binary_stream.read_utf8_char).to eq(symbol)
@@ -48,8 +61,7 @@ RSpec.describe BinaryStream do
 
     it 'incorrect symbol' do
       ['1111 1111', '1011 1111', '1100 1111 1111 1111 1111 1111'].each do |byte|
-        st = stream(byte)
-        binary_stream.set_stream!(st)
+        binary_stream.set_stream!(byte)
         expect { binary_stream.read_utf8_char }.to raise_error(BinaryStream::IncorrectUtf8Char)
       end
     end    

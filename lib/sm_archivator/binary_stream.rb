@@ -5,23 +5,26 @@ class BinaryStream
   class IncorrectUtf8Char < StandardError
   end
 
-  def initialize(stream)
+  def initialize(stream = '')
     set_stream!(stream)
   end
 
   def set_stream!(stream)
     @stream = stream
-    last_byte = @stream[-8,8].to_i(2)
-    @size = @stream.size - 8 - last_byte
     @pointer = 0
     self
   end
   
   def read_bit
-    raise StreamEnded if is_empty?
+    raise StreamEnded if in_end?
     bit = @stream[@pointer]
     @pointer += 1
     bit == '1'
+  end
+
+  def write_bit!(bit)
+    @stream.insert(@pointer, bit)
+    @pointer += 1
   end
   
   # Reads char in utf-8 encode
@@ -42,7 +45,7 @@ class BinaryStream
       end        
     end
 
-    raise IncorrectUtf8Char if units == 1 || (self_current + bytes * 8) > size_of_data
+    raise IncorrectUtf8Char if units == 1 || (self_current + bytes * 8) > size
     # (1 байт)  0aaa aaaa 
     # (2 байта) 110x xxxx 10xx xxxx
     # (3 байта) 1110 xxxx 10xx xxxx 10xx xxxx
@@ -54,16 +57,38 @@ class BinaryStream
     end 
 
     @pointer = self_current + bytes * 8
-
     Utf8::get_char(@stream[self_current...@pointer])
   end
 
-  def is_empty?
-    !(@pointer < size_of_data)
+  def write_char!(char)
+    @stream.insert(@pointer, char.to_binary)
+    @pointer += 1
   end
 
-  def size_of_data
-    @size
+  def in_end?
+    !(@pointer < size)
+  end
+
+  def size
+    @stream.size
+  end
+
+  def stream
+    @stream
+  end
+
+  def clear_stream!
+    set_stream!('')
+    self
+  end
+
+  def close_stream!    
+    missing_digits = size < 8 ? 8 - size : size % 8
+    @close_bits = '0' * missing_digits
+
+    binary_number_missing_digits = missing_digits.to_s(2)
+
+    @close_bits += '0' * ( 8 - missing_digits ) + binary_number_missing_digits
   end
   
 end

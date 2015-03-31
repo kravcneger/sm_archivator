@@ -1,4 +1,5 @@
 require "sm_archivator/version"
+require "sm_archivator/string/string"
 require "sm_archivator/pq"
 require "sm_archivator/node"
 require "sm_archivator/trie_builder"

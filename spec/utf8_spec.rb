@@ -6,12 +6,12 @@ RSpec.describe Utf8 do
 
   it "#get_char" do
     # 'Ŵ' - C1 B3
-    char = '1100 0001 1011 0011'.delete(' ')
+    char = '1100010110110100'.delete(' ')
     expect(Utf8::get_char(char)).to eq('Ŵ')
 
-    # 'ʓ'
-    char = '1110 0001 10110011 11111111'.delete(' ')
-    expect(Utf8::get_char(char)).to eq('ʓ')
+    # '⋙'
+    char = '11100010 10001011 10011001'.delete(' ')
+    expect(Utf8::get_char(char)).to eq('⋙')
 
     expect { Utf8::get_char('10101101111') }.to raise_error(Utf8::IncorrectChar)
   end

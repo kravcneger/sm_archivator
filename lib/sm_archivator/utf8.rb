@@ -6,12 +6,22 @@ module Utf8
     raise IncorrectChar unless valid_char(str)
 
     size = str.size
-    number = 0
-    (0..size).step(8) do |range|
-      number += str[range,8].to_i(2)
+    number_bytes = size / 8
+
+    code = 0
+
+    case number_bytes
+    when 1
+      code = str[1,7].to_i(2)
+    else
+      st = str[ number_bytes + 1, 8 - number_bytes -1 ]
+      (8...size).step(8) do |range|
+        st += str[range + 2, 6]
+      end
+      code = st.to_i(2)
     end
 
-    [number].pack('U')
+    [code].pack('U')
   end
 
   private

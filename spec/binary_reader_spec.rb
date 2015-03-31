@@ -21,28 +21,25 @@ RSpec.describe BinaryReader do
   end
   
   describe "read_utf8_char" do
+    let!(:chars){ [] }
     # ']'    
-    let(:char_one_byte){ '0101 1101' }
+    let!(:char_one_byte){ chars[0] = '0101 1101' }
     # 'Ŵ' - C1 B3
-    let(:char_two_bytes){ '1100 0001 1011 0011' }
-    # 'ɓ'
-    let(:char_three_bytes){ '1110 0001 10110011 10111111' }
-    # 'ˎ'
-    let(:char_four_bytes){ '11110000 10100111 10110111 1000 0000' }
-    let(:symbols){ [']', 'Ŵ', 'ɓ', 'ˎ'] }
+    let!(:char_two_bytes){ chars[1] = '11000101 10110100' }
+    # '⋙'
+    let!(:char_three_bytes){ chars[2] = '11100010 10001011 10011001' }
+    let!(:symbols){ [']', 'Ŵ', '⋙'] }
 
     def stream(char)
       char.delete(' ') + '00000000'
     end
 
     it 'correct symbol' do
-      expect(binary_reader.set_stream!( stream(char_one_byte) ).read_utf8_char).to eq(symbols[0])
-      expect(binary_reader.set_stream!( stream(char_two_bytes) ).read_utf8_char).to eq(symbols[1])
+      symbols.each_index do |k|
+        expect(binary_reader.set_stream!( stream(chars[k].delete(' ')) ).read_utf8_char).to eq(symbols[k])
+      end
       
-      expect(binary_reader.set_stream!( stream(char_three_bytes) ).read_utf8_char).to eq(symbols[2])
-      expect(binary_reader.set_stream!( stream(char_four_bytes) ).read_utf8_char).to eq(symbols[3])
-      
-      binary_reader.set_stream!( stream(char_one_byte + char_two_bytes + char_three_bytes + char_four_bytes) )
+      binary_reader.set_stream!( stream(char_one_byte + char_two_bytes + char_three_bytes) )
 
       symbols.each do |symbol|
         expect(binary_reader.read_utf8_char).to eq(symbol)

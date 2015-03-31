@@ -36,7 +36,16 @@ RSpec.describe BinaryStream do
     2.times { binary_stream.read_bit }
     expect{ binary_stream.write_char!('d') }.to change{binary_stream.stream}.from('11').to('1101100100')    
   end
-  
+
+  it "#close_stream!" do
+    binary_stream.close_stream!
+    expect( binary_stream.all_stream ).to eq('11100011111111111000000000000111 00000000'.delete(' '))
+
+    binary_stream.set_stream!('1')
+    binary_stream.close_stream!
+    expect( binary_stream.all_stream ).to eq('10000000 00000111'.delete(' '))
+  end
+
   describe "read_utf8_char" do
     let!(:chars){ [] }
     # ']'    

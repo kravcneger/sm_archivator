@@ -9,8 +9,9 @@ class BinaryStream
     set_stream!(stream)
   end
 
-  def set_stream!(stream)
+  def set_stream!(stream)    
     @stream = stream
+    @close_bits = ''
     @pointer = 0
     self
   end
@@ -62,7 +63,7 @@ class BinaryStream
 
   def write_char!(char)
     @stream.insert(@pointer, char.to_binary)
-    @pointer += 1
+    @pointer += char.to_binary.size
   end
 
   def in_end?
@@ -77,18 +78,26 @@ class BinaryStream
     @stream
   end
 
+  def all_stream
+    @stream + @close_bits
+  end
+
   def clear_stream!
     set_stream!('')
     self
   end
 
-  def close_stream!    
-    missing_digits = size < 8 ? 8 - size : size % 8
-    @close_bits = '0' * missing_digits
+  def close_stream!
+    missing_digits = size % 8 == 0 ? 0 : (8 - size % 8)
 
-    binary_number_missing_digits = missing_digits.to_s(2)
+    if missing_digits != 0     
+      @close_bits = '0' * missing_digits
 
-    @close_bits += '0' * ( 8 - missing_digits ) + binary_number_missing_digits
+      binary_number = missing_digits.to_s(2)
+      @close_bits += '0' * (8 - binary_number.size) + binary_number
+    else
+      @close_bits = '0' * 8
+    end
   end
   
 end

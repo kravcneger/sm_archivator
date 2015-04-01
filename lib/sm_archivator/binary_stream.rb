@@ -100,4 +100,10 @@ class BinaryStream
     end
   end
 
+  # removes last closed bits in a @stream
+  def remove_last_bits!
+    last_byte = @stream[-8, 8].to_i(2)
+    @stream[-(last_byte + 8), last_byte + 8] = ''
+  end
+  
 end

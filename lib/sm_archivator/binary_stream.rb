@@ -67,7 +67,7 @@ class BinaryStream
   end
 
   def in_end?
-    !(@pointer < size)
+    @pointer >= size
   end
 
   def size
@@ -99,5 +99,5 @@ class BinaryStream
       @close_bits = '0' * 8
     end
   end
-  
+
 end

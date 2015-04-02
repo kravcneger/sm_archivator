@@ -1,6 +1,6 @@
 # SmArchivator
 
-TODO: Write a gem description
+This gem is intended to compress data by the Huffman's algorithm. It works only with imitation binary streams that are made of '1' or '0' characters.
 
 ## Installation
 
@@ -19,8 +19,13 @@ Or install it yourself as:
     $ gem install sm_archivator
 
 ## Usage
+  to compress:
 
-TODO: Write usage instructions here
+    SmArchivator::compress('A message consists of charactres.') -> '1010101...'
+
+  to expand:
+
+    SmArchivator::expand('A Dummy binary stream 1010010101') -> String
 
 ## Contributing
 
